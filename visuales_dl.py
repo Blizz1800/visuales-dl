@@ -72,13 +72,13 @@ def load_args():
     if '-v' in argv:
         args['verbose'] = True
         logging.basicConfig(
-            format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s )\t-\t%(message)s",
+            format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s:%(lineno)d )\t-\t%(message)s",
             level=logging.INFO)
 
     if '-vv' in argv or len(argv) <= 1:
         args['verbose'] = True
         logging.basicConfig(
-            format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s )\t-\t%(message)s",
+            format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s:%(lineno)d )\t-\t%(message)s",
             level=logging.DEBUG)
 
     if '-t' in argv:
