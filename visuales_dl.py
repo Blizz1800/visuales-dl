@@ -1,5 +1,5 @@
 """Downloader for the https://visuales.uclv.cu/ web"""
-# pylint: disable=global-variable-not-assigned, global-statement
+# pylint: disable=global-variable-not-assigned, global-statement, too-many-branches, invalid-name, no-else-continue
 import re
 import logging
 from sys import argv
@@ -98,10 +98,9 @@ def load_args():
             help_message('-o')
         if not args.get('template'):
             args['template'] = 'txt'
-        f = open(args['output'], 'w+', encoding='utf-8')
-        if args.get('template') == 'm3u':
-            f.write('#EXTM3U\n')
-        f.close()
+        with open(args['output'], 'w+', encoding='utf-8') as f:
+            if args.get('template') == 'm3u':
+                f.write('#EXTM3U\n')
 
 
 def get_stream(url):
@@ -139,7 +138,7 @@ def download_file(fList: list):
     global BASE_URL
     global fileList
     for index in fList:
-        try: 
+        try:
             url = fileList[index-1].get('url')
             element = fileList[index-1].get('name')
             fSize = fileList[index-1].get('fsize')
@@ -148,7 +147,7 @@ def download_file(fList: list):
             i = -1
             while BASE_URL.split('/')[i] == '':
                 i -= 1
-            folder = path.join('.', unquote(BASE_URL.split('/')[i])) 
+            folder = path.join('.', unquote(BASE_URL.split('/')[i]))
             if not path.exists(folder):
                 mkdir(folder)
             out_file = path.join(folder, unquote(element))
@@ -156,7 +155,7 @@ def download_file(fList: list):
             with open(out_file, 'wb') as dFile:
                 logging.info('%s [%d]', out_file, size)
                 for data in tqdm(stream.iter_content(block_size),
-                                total=size//block_size, unit='KB', 
+                                total=size//block_size, unit='KB',
                                 unit_scale=True):
                     dFile.write(data)
             print("Complete!\n")
@@ -183,12 +182,11 @@ def write_txt(output, url):
 
 def write_list(url: str, element: str, ext: str):
     """Define what kind of file list should to use"""
-    out = open(args['output'], 'a+', encoding='utf-8')
-    if args.get('template') == 'txt':
-        write_txt(out, url)
-    if args.get('template') == 'm3u':
-        write_m3u(out, url, ext, element)
-    out.close()
+    with open(args['output'], 'a+', encoding='utf-8') as out:
+        if args.get('template') == 'txt':
+            write_txt(out, url)
+        if args.get('template') == 'm3u':
+            write_m3u(out, url, ext, element)
 
 
 def gui():
@@ -242,7 +240,8 @@ c\tCancel Download
             for i, e in enumerate(download_list):
                 if '-' in e:
                     t = e.split('-')
-                    download_list[i] = [index for index in range(int(t[0]), int(t[1])+1)]
+                    # download_list[i] = [index for index in range(int(t[0]), int(t[1])+1)]
+                    download_list[i] = list(range(int(t[0]), int(t[1])+1))
                 else:
                     download_list[i] = [int(e)]
             break
