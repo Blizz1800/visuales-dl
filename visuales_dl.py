@@ -1,22 +1,32 @@
-import requests
-import re 
+"""Downloader for the https://visuales.uclv.cu/ web"""
+import re
 import logging
 from sys import argv
+import sys
 from os import path, mkdir
 from urllib.parse import unquote
 from tqdm import tqdm
-from pprint import pprint
+import requests
+
+# Utils
+from util import exceptions
 
 # Global Variables
 args = {}
 extensions = ["avi", "srt", "mkv", "mpg", "mp4"]
-base_url = ""
+BASE_URL = ""
 fileList = []
 
-# Display Help Message and exit
-def help(onError=''):
-    if onError:
-        print(f"\nError: {onError} needs one argument!")
+
+def help_message(on_error=''):
+    """Display Help Message and exit
+
+    Args:
+        on_error (str, optional): Show the error message. Defaults to ''.
+    """
+
+    if on_error:
+        print(f"\nError: {on_error} needs one argument!")
     help_dict = [{
         'flag': '-a',
         'desc': "Detect all elements"
@@ -43,14 +53,15 @@ def help(onError=''):
             continue
         print(f"{h.get('flag')}\t{h.get('desc')}")
     print()
-    exit()
+    sys.exit()
 
 
 # Loads arguments from the cli
-def loadArgs():
+def load_args():
+    """Loads args"""
     if '-h' in argv:
-        help()
-    
+        help_message()
+
     if '-a' in argv:
         extensions.append('.*')
 
@@ -59,43 +70,49 @@ def loadArgs():
 
     if '-v' in argv:
         args['verbose'] = True
-        logging.basicConfig(format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s )\t-\t%(message)s", level=logging.INFO)
+        logging.basicConfig(
+            format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s )\t-\t%(message)s",
+            level=logging.INFO)
 
     if '-vv' in argv or len(argv) <= 1:
         args['verbose'] = True
-        logging.basicConfig(format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s )\t-\t%(message)s", level=logging.DEBUG)
-        
+        logging.basicConfig(
+            format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s )\t-\t%(message)s",
+            level=logging.DEBUG)
+
     if '-t' in argv:
         try:
             args['template'] = argv[argv.index('-t') + 1]
             if args['template'].startswith('-'):
-                raise Exception('-t needs one argument')
-        except:
-            help('-t')
-            
+                raise exceptions.BadParameterException('-t needs one argument')
+        except exceptions.BadParameterException:
+            help_message('-t')
+
     if '-o' in argv:
         try:
             args['output'] = argv[argv.index('-o') + 1]
             if args['output'].startswith('-'):
-                    raise Exception('-o needs one argument')
-        except:
-            help('-o')
+                raise exceptions.BadParameterException('-o needs one argument')
+        except exceptions.BadParameterException:
+            help_message('-o')
         if not args.get('template'):
             args['template'] = 'txt'
-        f = open(args['output'], 'w+')
+        f = open(args['output'], 'w+', encoding='utf-8')
         if args.get('template') == 'm3u':
             f.write('#EXTM3U\n')
         f.close()
 
 
-def getStream(url):
-    stream = requests.get(url, stream=True)
+def get_stream(url):
+    """returns the stream and size in Bytes"""
+    stream = requests.get(url, stream=True, timeout=10000)
     size = int(stream.headers.get('content-length', 0))
     return (stream, size)
 
 
-def addFileToList(url):
-    stream, size = getStream(url)
+def add_file_to_list(url):
+    """Add file to download list"""
+    stream, size = get_stream(url)
     stream.close()
     nSize = size
     file_url = url.split('/')[-1]
@@ -107,127 +124,140 @@ def addFileToList(url):
             unit = u
             continue
         break
-    logging.info(f"Load [{file_url}] ({size})")
+    logging.info("Load [%s] (%d)", file_url, size)
     fileList.append({
         'name': unquote(file_url),
         'url' : url,
         'size': size,
         'fsize': f"{nSize}{unit}",
     })
-    
 
-# Download file into corresponding directory
-def downloadFile(fList: list):
-    global base_url
+
+def download_file(fList: list):
+    """Download file into corresponding directory"""
+    global BASE_URL
     global fileList
     for index in fList:
         try: 
             url = fileList[index-1].get('url')
             element = fileList[index-1].get('name')
             fSize = fileList[index-1].get('fsize')
-            stream, size = getStream(url)
+            stream, size = get_stream(url)
             block_size = 1024
             i = -1
-            while base_url.split('/')[i] == '':
+            while BASE_URL.split('/')[i] == '':
                 i -= 1
-            folder = path.join('.', unquote(base_url.split('/')[i])) 
+            folder = path.join('.', unquote(BASE_URL.split('/')[i])) 
             if not path.exists(folder):
                 mkdir(folder)
             out_file = path.join(folder, unquote(element))
             print(f"{index}. {element} | [{fSize}]")
             with open(out_file, 'wb') as dFile:
-                logging.info(f'{out_file} [{size}]')
-                for data in tqdm(stream.iter_content(block_size), total=size//block_size, unit='KB', unit_scale=True):
+                logging.info('%s [%d]', out_file, size)
+                for data in tqdm(stream.iter_content(block_size),
+                                total=size//block_size, unit='KB', 
+                                unit_scale=True):
                     dFile.write(data)
             print("Complete!\n")
         except KeyboardInterrupt:
             return
 
-# Write links in format of M3U
-def writeM3U(output, url, ext, element):
+
+def write_m3u(output, url, ext, element):
+    """Write links in format of M3U"""
     if ext == 'srt':
-            return
-    slave = re.sub(f'(.*\.){ext}$', '\g<1>srt', url)
-    output.write(f"#EXTINF:0,{element}\n#EXTVLCOPT:input-slave={slave}\n#EXTVLCOPT:network-caching=1000\n{url}\n")
+        return
+    slave = re.sub(fr'(.*\.){ext}$', r'\g<1>srt', url)
+    output.write(f"""#EXTINF:0,{element}
+#EXTVLCOPT:input-slave={slave}
+#EXTVLCOPT:network-caching=1000
+{url}
+""")
 
 
-# Write links in format of TXT (link/line)
-def writeTXT(output, url):
+def write_txt(output, url):
+    """Write links in format of TXT (link/line)"""
     output.write(url + '\n')
 
 
-# Define what kind of file list should to use
-def writeList(url: str, element: str, ext: str):
-    out = open(args['output'], 'a+')
+def write_list(url: str, element: str, ext: str):
+    """Define what kind of file list should to use"""
+    out = open(args['output'], 'a+', encoding='utf-8')
     if args.get('template') == 'txt':
-        writeTXT(out, url)
+        write_txt(out, url)
     if args.get('template') == 'm3u':
-        writeM3U(out, url, ext, element)
+        write_m3u(out, url, ext, element)
     out.close()
 
 
-# Start the GUI
 def gui():
-    pass
+    """Start the GUI"""
 
 
-# Initiate the CLI
 def cli():
-    global base_url
-    base_url = input('Introduzca la URL de la web: ')
-    data = requests.get(base_url)
+    """Initiate the CLI"""
+    global BASE_URL
+    BASE_URL = input('Introduzca la URL de la web: ')
+    data = requests.get(BASE_URL, timeout=10000)
     for element in re.findall('<a href="(.*)">.*</a>', data.text):
         for ext in extensions:
-            if (re.match(f'^.*\.{ext}$', element)):
-                url = f"{base_url}{element}"
+            if re.match(fr'^.*\.{ext}$', element):
+                url = f"{BASE_URL}{element}"
                 if not args.get('download'):
                     if args.get('output') and not args.get('verbose'):
-                       writeList(url, element, ext)
+                        write_list(url, element, ext)
                     elif args.get('output') and args.get('verbose'):
-                        with open(args['output'], 'a+') as out:
+                        with open(args['output'], 'a+', encoding='utf-8') as out:
                             out.write(url + '\r\n')
                         logging.info(url)
                     else:
                         logging.info(url)
                 else:
-                    addFileToList(url)
+                    add_file_to_list(url)
     if args.get('download'):
         print()
-        downloadList = []
+        download_list = []
         for i, e in enumerate(fileList):
             print(f"{i}. {e.get('name')} [{e.get('fsize')}]")
         print()
-        print("a\tTodos\nX-Y\tFrom X to Y\nX,Y,Z\tDownload X, Y and Z\nA-F,L-T,Z\tDownload from A to F, from L to T, and Z\ne\tShow examples\nc\tCancel Download\n")
+        print("""a\tTodos
+X-Y\tFrom X to Y
+X,Y,Z\tDownload X, Y and Z
+A-F,L-T,Z\tDownload from A to F, from L to T, and Z
+e\tShow examples
+c\tCancel Download
+""")
         while True:
             selection = input("Choose what files you wanna download: ")
             if 'e' in selection:
-                print('7-10\tDownload 7, 8, 9, 10\n7,9\tDownload 7 and 9\n7-9,23\tDownload 7, 8, 9 and 23')
+                print('''7-10\tDownload 7, 8, 9, 10
+7,9\tDownload 7 and 9
+7-9,23\tDownload 7, 8, 9 and 23''')
                 continue
             elif 'a' in selection:
-                downloadList = [e.get('url') for e in fileList]
+                download_list = [e.get('url') for e in fileList]
                 break
-            downloadList = selection.split(',')
-            for i, e in enumerate(downloadList):
+            download_list = selection.split(',')
+            for i, e in enumerate(download_list):
                 if '-' in e:
                     t = e.split('-')
-                    downloadList[i] = [index for index in range(int(t[0]), int(t[1])+1)]
+                    download_list[i] = [index for index in range(int(t[0]), int(t[1])+1)]
                 else:
-                    downloadList[i] = [int(e)]
+                    download_list[i] = [int(e)]
             break
-        for i in downloadList:
-            if downloadList.index(i) > 0:
+        for i in download_list:
+            if download_list.index(i) > 0:
                 for o in i:
-                    downloadList[0].append(o)
-                downloadList.remove(i)
-        downloadList = downloadList[0]
-        downloadFile(downloadList)
+                    download_list[0].append(o)
+                download_list.remove(i)
+        download_list = download_list[0]
+        download_file(download_list)
 
 
 # Entry point
 if __name__ == '__main__':
-    loadArgs()
+    load_args()
     if args.get('GUI'):
         gui()
     else:
         cli()
-        
