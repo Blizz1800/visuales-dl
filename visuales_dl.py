@@ -1,4 +1,5 @@
 """Downloader for the https://visuales.uclv.cu/ web"""
+# pylint: disable=global-variable-not-assigned, global-statement
 import re
 import logging
 from sys import argv
