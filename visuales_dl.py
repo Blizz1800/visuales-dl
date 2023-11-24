@@ -4,7 +4,7 @@ import re
 import logging
 from sys import argv
 import sys
-from os import path, mkdir
+from os import path, makedirs
 from urllib.parse import unquote
 from tqdm import tqdm
 import requests
@@ -148,9 +148,9 @@ def download_file(fList: list):
             i = -1
             while BASE_URL.split('/')[i] == '':
                 i -= 1
-            folder = path.join('.', unquote(BASE_URL.split('/')[i]))
+            folder = path.join('.', 'download', unquote(BASE_URL.split('/')[i]))
             if not path.exists(folder):
-                mkdir(folder)
+                makedirs(folder)
             out_file = path.join(folder, unquote(element))
             print(f"{index}. {element} | [{fSize}]")
             with open(out_file, 'wb') as dFile:
@@ -216,7 +216,7 @@ def cli():
     if args.get('download'):
         print()
         download_list = []
-        fileList.sort(key=lambda k: k.get('size'))
+        # fileList.sort(key=lambda k: k.get('size'))
         for i, e in enumerate(fileList):
             print(f"{i+1}. {e.get('name')} [{e.get('fsize')}]")
         print()

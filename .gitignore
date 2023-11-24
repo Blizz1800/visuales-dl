@@ -9,6 +9,9 @@ __pycache__/
 # Tmp files
 *.tmp*
 
+# Download Folder for tests
+/download/
+
 # Distribution / packaging
 .Python
 build/
