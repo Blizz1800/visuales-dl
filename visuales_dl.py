@@ -64,6 +64,7 @@ def load_args():
         help_message()
 
     if '-a' in argv:
+        extensions.clear()
         extensions.append('.*')
 
     if '-d' in argv:
@@ -72,14 +73,14 @@ def load_args():
     if '-v' in argv:
         args['verbose'] = True
         logging.basicConfig(
-            format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s:%(lineno)d )\t-\t%(message)s",
-            level=logging.INFO)
+         format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s:%(lineno)d )\t-\t%(message)s",
+         level=logging.INFO)
 
     if '-vv' in argv or len(argv) <= 1:
         args['verbose'] = True
         logging.basicConfig(
-            format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s:%(lineno)d )\t-\t%(message)s",
-            level=logging.DEBUG)
+         format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s:%(lineno)d )\t-\t%(message)s",
+         level=logging.DEBUG)
 
     if '-t' in argv:
         try:
@@ -153,7 +154,6 @@ def download_file(fList: list):
             out_file = path.join(folder, unquote(element))
             print(f"{index}. {element} | [{fSize}]")
             with open(out_file, 'wb') as dFile:
-                logging.info('%s [%d]', out_file, size)
                 for data in tqdm(stream.iter_content(block_size),
                                 total=size//block_size, unit='KB',
                                 unit_scale=True):
@@ -216,8 +216,9 @@ def cli():
     if args.get('download'):
         print()
         download_list = []
+        fileList.sort(key=lambda k: k.get('size'))
         for i, e in enumerate(fileList):
-            print(f"{i}. {e.get('name')} [{e.get('fsize')}]")
+            print(f"{i+1}. {e.get('name')} [{e.get('fsize')}]")
         print()
         print("""a\tTodos
 X-Y\tFrom X to Y
@@ -234,7 +235,9 @@ c\tCancel Download
 7-9,23\tDownload 7, 8, 9 and 23''')
                 continue
             elif 'a' in selection:
-                download_list = [e.get('url') for e in fileList]
+                # download_list = [e.get('url') for e in fileList]
+                download_list = list(range(len(fileList)))
+                download_list = [download_list]
                 break
             download_list = selection.split(',')
             for i, e in enumerate(download_list):
