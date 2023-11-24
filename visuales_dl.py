@@ -131,6 +131,7 @@ def add_file_to_list(url):
         'url' : url,
         'size': size,
         'fsize': f"{nSize}{unit}",
+        'unit': unit
     })
 
 
@@ -143,6 +144,7 @@ def download_file(fList: list):
             url = fileList[index-1].get('url')
             element = fileList[index-1].get('name')
             fSize = fileList[index-1].get('fsize')
+            unit = fileList[index-1].get('unit')
             stream, size = get_stream(url)
             block_size = 1024
             i = -1
@@ -155,7 +157,7 @@ def download_file(fList: list):
             print(f"{index}. {element} | [{fSize}]")
             with open(out_file, 'wb') as dFile:
                 for data in tqdm(stream.iter_content(block_size),
-                                total=size//block_size, unit='KB',
+                                total=size//block_size, unit=unit,
                                 unit_scale=True):
                     dFile.write(data)
             print("Complete!\n")
