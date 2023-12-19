@@ -8,7 +8,6 @@ from os import path, makedirs
 from urllib.parse import unquote
 from tqdm import tqdm
 import requests
-import json
 
 # Utils
 from util import exceptions
@@ -159,7 +158,6 @@ def download_file(fList: list):
             fSize = fileList[index-1].get('fsize')
             unit = fileList[index-1].get('unit')
             subfolder = fileList[index-1].get('subfolder')
-            print(json.dumps(fileList[index-1]))
             stream, size = get_stream(url)
             block_size = 1024
             i = -1
