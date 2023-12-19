@@ -8,6 +8,7 @@ from os import path, makedirs
 from urllib.parse import unquote
 from tqdm import tqdm
 import requests
+import json
 
 # Utils
 from util import exceptions
@@ -16,6 +17,8 @@ from util import exceptions
 args = {}
 extensions = ["avi", "srt", "mkv", "mpg", "mp4"]
 BASE_URL = ""
+WEB_SITE = ""
+VISITED = []
 fileList = []
 
 
@@ -69,6 +72,10 @@ def load_args():
 
     if '-d' in argv:
         args['download'] = True
+        
+    if '-r' in argv:
+        args['recursive'] = True
+        extensions.append('/')
 
     if '-v' in argv:
         args['verbose'] = True
@@ -111,7 +118,7 @@ def get_stream(url):
     return (stream, size)
 
 
-def add_file_to_list(url):
+def add_file_to_list(url:str, subfolder: str = ''):
     """Add file to download list"""
     stream, size = get_stream(url)
     stream.close()
@@ -125,13 +132,19 @@ def add_file_to_list(url):
             unit = u
             continue
         break
-    logging.info("Load [%s] (%d)", file_url, size)
+    if not file_url:
+        return
+    if subfolder:
+        logging.info("From [%s] load [%s] (%s)", subfolder, unquote(file_url), f"{nSize}{unit}")
+    else:
+        logging.info("Load [%s] (%s)", unquote(file_url), f"{nSize}{unit}")
     fileList.append({
         'name': unquote(file_url),
-        'url' : url,
+        'url': url,
         'size': size,
         'fsize': f"{nSize}{unit}",
-        'unit': unit
+        'unit': unit,
+        'subfolder': subfolder,
     })
 
 
@@ -145,16 +158,23 @@ def download_file(fList: list):
             element = fileList[index-1].get('name')
             fSize = fileList[index-1].get('fsize')
             unit = fileList[index-1].get('unit')
+            subfolder = fileList[index-1].get('subfolder')
+            print(json.dumps(fileList[index-1]))
             stream, size = get_stream(url)
             block_size = 1024
             i = -1
-            while BASE_URL.split('/')[i] == '':
+            while not BASE_URL.split('/')[i]:
                 i -= 1
-            folder = path.join('.', 'download', unquote(BASE_URL.split('/')[i]))
+            folder = path.join('.', 'download', unquote(BASE_URL.split('/')[i]).replace(':', '_'))
+            subfolder = path.join(folder, subfolder)
             if not path.exists(folder):
                 makedirs(folder)
+            if subfolder:
+                if not path.exists(subfolder):
+                    makedirs(subfolder)
+                folder = subfolder
             out_file = path.join(folder, unquote(element))
-            print(f"{index}. {element} | [{fSize}]")
+            print(f"{index}. {element} | [{fSize}] -> {out_file}")
             with open(out_file, 'wb') as dFile:
                 for data in tqdm(stream.iter_content(block_size),
                                 total=size//block_size, unit=unit,
@@ -195,15 +215,22 @@ def gui():
     """Start the GUI"""
 
 
-def cli():
-    """Initiate the CLI"""
-    global BASE_URL
-    BASE_URL = input('Introduzca la URL de la web: ')
-    data = requests.get(BASE_URL, timeout=10000)
+def process_link(link: str, subfolder: str = ''):
+    parent = '/'.join(link.split('/')[0:-2]) + '/'
+    data = requests.get(link, timeout=10000)
     for element in re.findall('<a href="(.*)">.*</a>', data.text):
         for ext in extensions:
-            if re.match(fr'^.*\.{ext}$', element):
-                url = f"{BASE_URL}{element}"
+            if re.match(fr'^(?!\?).*\.?{ext}$', element):
+                url = f"{WEB_SITE}{element}"
+                if not element.startswith('/'):
+                    url = f"{link}{element}"
+                if args.get('recursive', False) and (url == parent or url in VISITED):
+                    continue
+                VISITED.append(url)
+                if element.endswith('/'):
+                    subfolder = unquote(url.split('/')[-2])
+                    process_link(url, subfolder)
+                    continue
                 if not args.get('download'):
                     if args.get('output') and not args.get('verbose'):
                         write_list(url, element, ext)
@@ -214,12 +241,28 @@ def cli():
                     else:
                         logging.info(url)
                 else:
-                    add_file_to_list(url)
-    if args.get('download'):
+                    add_file_to_list(url, subfolder)
+
+
+def cli():
+    """Initiate the CLI"""
+    global BASE_URL
+    global WEB_SITE
+    global VISITED
+    BASE_URL = input('Introduzca la URL de la web: ')
+    WEB_SITE = '/'.join(BASE_URL.split('/')[0:3])
+    process_link(BASE_URL)
+    if args.get('download') and len(fileList):
         print()
         download_list = []
         # fileList.sort(key=lambda k: k.get('size'))
+        lastGroup = ''
         for i, e in enumerate(fileList):
+            if e.get('subfolder') != lastGroup:
+                if i:
+                    print()
+                print(e.get('subfolder'))
+                lastGroup = e.get('subfolder')
             print(f"{i+1}. {e.get('name')} [{e.get('fsize')}]")
         print()
         print("""a\tTodos
