@@ -33,19 +33,19 @@ def help_message(on_error=''):
     help_dict = [{
         'flag': '-a',
         'desc': "Detect all elements"
-    },{
+    }, {
         'flag': '-d',
         'desc': "Download elements"
-    },{
+    }, {
         'flag': '-v',
         'desc': "Be verbose"
-    },{
+    }, {
         'flag': '-vv',
         'desc': "Be MORE verbose!!"
-    },{
+    }, {
         'flag': '-t <arg>',
         'desc': "Especify a template type (valid 'txt' and 'm3u')"
-    },{
+    }, {
         'flag': '-o <arg>',
         'desc': "Especify the output template file"
     }]
@@ -71,7 +71,7 @@ def load_args():
 
     if '-d' in argv:
         args['download'] = True
-        
+
     if '-r' in argv:
         args['recursive'] = True
         extensions.append('/')
@@ -79,14 +79,14 @@ def load_args():
     if '-v' in argv:
         args['verbose'] = True
         logging.basicConfig(
-         format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s:%(lineno)d )\t-\t%(message)s",
-         level=logging.INFO)
+            format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s:%(lineno)d )\t-\t%(message)s",
+            level=logging.INFO)
 
     if '-vv' in argv or len(argv) <= 1:
         args['verbose'] = True
         logging.basicConfig(
-         format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s:%(lineno)d )\t-\t%(message)s",
-         level=logging.DEBUG)
+            format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s:%(lineno)d )\t-\t%(message)s",
+            level=logging.DEBUG)
 
     if '-t' in argv:
         try:
@@ -122,7 +122,7 @@ def get_stream(url):
     return (stream, size)
 
 
-def add_file_to_list(url:str, basefolder='', subfolder: str = ''):
+def add_file_to_list(url: str, basefolder='', subfolder: str = ''):
     """Add file to download list"""
     stream, size = get_stream(url)
     stream.close()
@@ -139,7 +139,8 @@ def add_file_to_list(url:str, basefolder='', subfolder: str = ''):
     if not file_url:
         return
     if subfolder:
-        logging.info("From [%s] load [%s] (%s)", subfolder, unquote(file_url), f"{nSize}{unit}")
+        logging.info("From [%s] load [%s] (%s)", subfolder,
+                     unquote(file_url), f"{nSize}{unit}")
     else:
         logging.info("Load [%s] (%s)", unquote(file_url), f"{nSize}{unit}")
     fileList.append({
@@ -168,7 +169,8 @@ def download_file(fList: list):
             i = -1
             while not basefolder.split('/')[i]:
                 i -= 1
-            folder = path.join('.', 'download', unquote(basefolder.split('/')[i]).replace(':', '_'))
+            folder = path.join('.', 'download', unquote(
+                basefolder.split('/')[i]).replace(':', '_'))
             subfolder = path.join(folder, subfolder)
             if not path.exists(folder):
                 makedirs(folder)
@@ -180,8 +182,9 @@ def download_file(fList: list):
             print(f"{index}. {element} | [{fSize}] -> {out_file}")
             with open(out_file, 'wb') as dFile:
                 for data in tqdm(stream.iter_content(block_size),
-                                total=size//block_size, unit='Kb',
-                                unit_scale=True):
+                                 desc=element, unit_divisor=1204,
+                                 total=size//block_size, unit='b',
+                                 unit_scale=True):
                     dFile.write(data)
             print("Complete!\n")
         except KeyboardInterrupt:
