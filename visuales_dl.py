@@ -122,7 +122,7 @@ def get_stream(url):
     return (stream, size)
 
 
-def add_file_to_list(url:str, subfolder: str = ''):
+def add_file_to_list(url:str, basefolder='', subfolder: str = ''):
     """Add file to download list"""
     stream, size = get_stream(url)
     stream.close()
@@ -149,26 +149,26 @@ def add_file_to_list(url:str, subfolder: str = ''):
         'fsize': f"{nSize}{unit}",
         'unit': unit,
         'subfolder': subfolder,
+        'basefolder': basefolder,
     })
 
 
 def download_file(fList: list):
     """Download file into corresponding directory"""
-    global BASE_URL
     global fileList
     for index in fList:
         try:
             url = fileList[index-1].get('url')
             element = fileList[index-1].get('name')
             fSize = fileList[index-1].get('fsize')
-            unit = fileList[index-1].get('unit')
             subfolder = fileList[index-1].get('subfolder')
+            basefolder = fileList[index-1].get('basefolder')
             stream, size = get_stream(url)
             block_size = 1024
             i = -1
-            while not BASE_URL.split('/')[i]:
+            while not basefolder.split('/')[i]:
                 i -= 1
-            folder = path.join('.', 'download', unquote(BASE_URL.split('/')[i]).replace(':', '_'))
+            folder = path.join('.', 'download', unquote(basefolder.split('/')[i]).replace(':', '_'))
             subfolder = path.join(folder, subfolder)
             if not path.exists(folder):
                 makedirs(folder)
@@ -246,7 +246,7 @@ def process_link(link: str, subfolder: str = ''):
                     else:
                         logging.info(url)
                 else:
-                    add_file_to_list(url, subfolder)
+                    add_file_to_list(url, link, subfolder)
 
 
 def cli():
