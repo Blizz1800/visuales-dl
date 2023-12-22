@@ -12,6 +12,8 @@ Visuales-dl es un descargador de contenido especial para la web [Visuales de la 
 
 - [x] Recursion de enlaces
 
+- [x] Cargar links desde los argumentos
+
 - [ ] GUI
 
 - [ ] Continuar la descarga desde una interrupcion anterior

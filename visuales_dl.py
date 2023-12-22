@@ -15,7 +15,7 @@ from util import exceptions
 # Global Variables
 args = {}
 extensions = ["avi", "srt", "mkv", "mpg", "mp4"]
-BASE_URL = ""
+LINKS = []
 WEB_SITE = ""
 VISITED = []
 fileList = []
@@ -108,6 +108,11 @@ def load_args():
         with open(args['output'], 'w+', encoding='utf-8') as f:
             if args.get('template') == 'm3u':
                 f.write('#EXTM3U\n')
+    for arg in argv:
+        if arg.startswith('-') or not re.match(r'\bhttps?:\/\/[\w\-+&@#\/%=~|$?_\!*\'()\[\],.;:]+', arg):
+            continue
+        LINKS.append(arg)
+        logging.info('[%s] loaded!', arg)
 
 
 def get_stream(url):
@@ -175,7 +180,7 @@ def download_file(fList: list):
             print(f"{index}. {element} | [{fSize}] -> {out_file}")
             with open(out_file, 'wb') as dFile:
                 for data in tqdm(stream.iter_content(block_size),
-                                total=size//block_size, unit=unit,
+                                total=size//block_size, unit='Kb',
                                 unit_scale=True):
                     dFile.write(data)
             print("Complete!\n")
@@ -216,6 +221,8 @@ def gui():
 def process_link(link: str, subfolder: str = ''):
     parent = '/'.join(link.split('/')[0:-2]) + '/'
     data = requests.get(link, timeout=10000)
+    if data.status_code != 200:
+        logging.error('[%d] Error occurred with [%s]!', data.status_code, link)
     for element in re.findall('<a href="(.*)">.*</a>', data.text):
         for ext in extensions:
             if re.match(fr'^(?!\?).*\.?{ext}$', element):
@@ -244,12 +251,14 @@ def process_link(link: str, subfolder: str = ''):
 
 def cli():
     """Initiate the CLI"""
-    global BASE_URL
     global WEB_SITE
     global VISITED
-    BASE_URL = input('Introduzca la URL de la web: ')
-    WEB_SITE = '/'.join(BASE_URL.split('/')[0:3])
-    process_link(BASE_URL)
+    global LINKS
+    if not len(LINKS):
+        LINKS.append(input('Introduzca la URL de la web: '))
+    for url in LINKS:
+        WEB_SITE = '/'.join(url.split('/')[0:3])
+        process_link(url)
     if args.get('download') and len(fileList):
         print()
         download_list = []
