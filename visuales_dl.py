@@ -182,7 +182,7 @@ def download_file(fList: list):
             print(f"{index}. {element} | [{fSize}] -> {out_file}")
             with open(out_file, 'wb') as dFile:
                 for data in tqdm(stream.iter_content(block_size),
-                                 desc=element, unit_divisor=1204,
+                                 desc=element, unit_divisor=1024,
                                  total=size//block_size, unit='b',
                                  unit_scale=True):
                     dFile.write(data)
