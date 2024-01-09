@@ -26,6 +26,11 @@ Visuales-dl es un descargador de contenido especial para la web [Visuales de la 
 
 ## Como usar
 
+### Instalar dependencias
+```sh
+pip install -r requirements.txt
+```
+
 ### Linux / MacOS
 ```sh
 python3 visuales_dl.py [params]
