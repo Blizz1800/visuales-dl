@@ -9,8 +9,10 @@ __pycache__/
 # Tmp files
 *.tmp*
 
-# Download Folder for tests
+# Test and unessesary files
 /download/
+/tests/
+*.txt
 
 # Distribution / packaging
 .Python
