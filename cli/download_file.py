@@ -42,8 +42,10 @@ def main(fList: list):
                 # Escribimos el archivo
                 with open(out_file, 'wb') as dFile:
                     for data in tqdm(stream.iter_content(block_size),
-                                     desc=element, unit_divisor=1024,
-                                     total=size//block_size, unit='b',
+                                     desc=element,
+                                     total=size,
+                                     unit_divisor=1024,
+                                     unit='kb',
                                      unit_scale=True):
                         dFile.write(data)
             print("Complete!\n")
