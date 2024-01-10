@@ -1,8 +1,7 @@
 import sys
 import logging
-import re
 
-from util import exceptions
+from util import exceptions, validate
 
 from .globl import globl
 
@@ -103,7 +102,7 @@ def main():
 
     # Cargar links desde la linea de parametros
     for arg in sys.argv:
-        if arg.startswith('-') or not re.match(r'\bhttps?:\/\/[\w\-+&@#\/%=~|$?_\!*\'()\[\],.;:]+', arg):
+        if arg.startswith('-') or not validate.https(arg):
             continue  # Si el argumento no se ajusta a la sintaxis de https ignorarlo
         globl.LINKS.append(arg)
         logging.info('[%s] loaded!', arg)

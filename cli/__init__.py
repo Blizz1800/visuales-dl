@@ -3,16 +3,22 @@ from .download_file import main as download_file
 from .load_args import main as load_args
 from .globl import globl
 
+from util import validate
+
 import logging
+from urllib.parse import unquote
 
 
 def cli():
     """Initiate the CLI"""
     # Si no detectamos links desde la linea de comandos
     if not len(globl.LINKS):
-        globl.LINKS.append(input('Introduzca la URL de la web: '))
+        globl.LINKS.extend(input('Introduzca la URL de la web: ').split(' '))
     # Comenzamos a iterar todos los links
     for url in globl.LINKS:
+        if not validate.https(url):
+            logging.info("\"%s\" no es una url valida!", unquote(url))
+            continue
         # La base de la url para obtener el nombre de dominio
         globl.WEB_SITE = '/'.join(url.split('/')[0:3])
         logging.debug("Processing: %s [%s]", url, globl.WEB_SITE)
