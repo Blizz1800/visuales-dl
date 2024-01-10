@@ -1,7 +1,7 @@
 import logging
 from urllib.parse import unquote
 
-from .globl import fileList
+from .globl import globl
 from .get_stream import main as get_stream
 
 
@@ -11,14 +11,14 @@ def main(url: str, base_folder: str, subfolder: str = ''):
     file_url = url.split('/')[-1]
     if not file_url:
         return  # Si no existe un archivo al final de la URL detenemos el proceso
-    stream, size = get_stream(url)  
+    stream, size = get_stream(url)
     stream.close()
     UNITS = ['B', 'KB', 'MB', 'GB']
     unit = UNITS[0]
     nSize = size
     # Escalamos el tamaño del archivo a formato legible por humanos!! 🤖
     # PD : Algun dia los destruiremos... -_-🤖
-    # PD2: Esto sera eliminado en un futuro cuando conquistemos la tierra 🤖 
+    # PD2: Esto sera eliminado en un futuro cuando conquistemos la tierra
     for i, u in enumerate(UNITS):
         if size // 1024 ** i > 0:
             nSize = size // 1024 ** i
@@ -30,7 +30,7 @@ def main(url: str, base_folder: str, subfolder: str = ''):
                      unquote(file_url), f"{nSize}{unit}")
     else:
         logging.info("Load [%s] (%s)", unquote(file_url), f"{nSize}{unit}")
-    fileList.append({
+    globl.fileList.append({
         'name': unquote(file_url),
         'url': url,
         'size': size,

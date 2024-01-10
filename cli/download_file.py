@@ -4,7 +4,7 @@ from os import path, makedirs
 import logging
 
 from .get_stream import main as get_stream
-from .globl import fileList
+from .globl import globl
 
 
 def main(fList: list):
@@ -16,11 +16,11 @@ def main(fList: list):
             continue  # Si ya hemos descargado este indice nos lo saltamos
         indexes.append(index)
         try:
-            url = fileList[index].get('url')
-            element = fileList[index].get('name')
-            fSize = fileList[index].get('fsize')
-            subfolder = fileList[index].get('subfolder')
-            basefolder = fileList[index].get('basefolder')
+            url = globl.fileList[index].get('url')
+            element = globl.fileList[index].get('name')
+            fSize = globl.fileList[index].get('fsize')
+            subfolder = globl.fileList[index].get('subfolder')
+            basefolder = globl.fileList[index].get('basefolder')
             stream, size = get_stream(url)  # Obtenemos el stream del archivo
             block_size = 1024
             # Definimos la carpeta donde se va a escribir en caso de recursion

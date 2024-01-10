@@ -1,4 +1,4 @@
-from .globl import args
+from .globl import globl
 import re
 
 
@@ -18,8 +18,10 @@ def write_txt(output, url):
 
 def main(url: str, element: str, ext: str):
     """Define what kind of file list should to use"""
-    with open(args['output'], 'a+', encoding='utf-8') as out:
-        if args.get('template', 'txt') == 'txt':  # Verificamos q la plantilla sea txt
+    with open(globl.args['output'], 'a+', encoding='utf-8') as out:
+        # Verificamos q la plantilla sea txt
+        if globl.args.get('template', 'txt') == 'txt':
             write_txt(out, url)
-        elif args.get('template') == 'm3u': # Verificamos q la plantilla sea m3u
-            write_m3u(out, url, ext, element) 
+        # Verificamos q la plantilla sea m3u
+        elif globl.args.get('template') == 'm3u':
+            write_m3u(out, url, ext, element)
