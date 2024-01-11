@@ -67,7 +67,7 @@ def cli():
                         )
                         download_list.extend(l)
                     else:
-                        download_list.append(int(e))
+                        download_list.append(int(e)-1)
                 except ValueError:
                     logging.debug('%s no es un int', e)
                     continue
