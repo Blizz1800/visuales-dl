@@ -52,7 +52,7 @@ def main():
     # Detectar todas las posibles extensiones de archivo
     if '-a' in sys.argv:
         globl.extensions.clear()
-        globl.extensions.append('.*')
+        globl.extensions.append(r'.*\..*(?!\/)')
 
     # Descargar archivos
     if '-d' in sys.argv:
