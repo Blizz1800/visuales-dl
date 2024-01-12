@@ -41,13 +41,15 @@ def main(fList: list):
             if not path.exists(out_file) or path.getsize(out_file) < size:
                 # Escribimos el archivo
                 with open(out_file, 'wb') as dFile:
-                    for data in tqdm(stream.iter_content(block_size),
-                                     desc=element,
-                                     total=size,
-                                     unit_divisor=1024,
-                                     unit='kb',
-                                     unit_scale=True):
-                        dFile.write(data)
+                    pbar = tqdm(desc=element, total=size,
+                                unit_divisor=1024, leave=False,
+                                unit='B', unit_scale=True)
+                    pbar.clear()
+                    for block in stream.iter_content(block_size):
+                        if block:
+                            pbar.update(len(block))
+                            dFile.write(block)
+                    pbar.close()
             print("Complete!\n")
         except KeyboardInterrupt:
             with open(path.join('.', 'index.txt'), 'w+') as f:
