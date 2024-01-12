@@ -16,7 +16,7 @@ def write_txt(output, url):
     output.write(url + '\n')
 
 
-def main(url: str, element: str, ext: str):
+def write_list(url: str, element: str, ext: str):
     """Define what kind of file list should to use"""
     with open(globl.args['output'], 'a+', encoding='utf-8') as out:
         # Verificamos q la plantilla sea txt

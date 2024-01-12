@@ -1,6 +1,6 @@
-from .process_link import main as process_link
-from .download_file import main as download_file
-from .load_args import main as load_args
+from .process_link import process_link
+from .download_file import download_file
+from .load_args import load_args
 from .globl import globl
 
 from util import validate

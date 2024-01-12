@@ -3,11 +3,11 @@ from urllib.parse import unquote
 from os import path, makedirs
 import logging
 
-from .get_stream import main as get_stream
+from .get_stream import get_stream
 from .globl import globl
 
 
-def main(fList: list):
+def download_file(fList: list):
     """Download file into corresponding directory"""
     indexes = []
     for index in fList:

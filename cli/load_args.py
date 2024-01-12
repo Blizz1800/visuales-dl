@@ -44,7 +44,7 @@ def help_message(on_error=''):
     sys.exit()
 
 
-def main():
+def load_args():
     """Loads args"""
     if '-h' in sys.argv:
         help_message()

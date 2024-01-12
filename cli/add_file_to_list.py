@@ -2,10 +2,10 @@ import logging
 from urllib.parse import unquote
 
 from .globl import globl
-from .get_stream import main as get_stream
+from .get_stream import get_stream
 
 
-def main(url: str, base_folder: str, subfolder: str = ''):
+def add_file_to_list(url: str, base_folder: str, subfolder: str = ''):
     """Add file to download list"""
     # Obtenemos los datos del archivo desde el servidor
     file_url = url.split('/')[-1]

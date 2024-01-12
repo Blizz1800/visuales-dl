@@ -1,24 +1,25 @@
-import requests
 import logging
 import re
 from urllib.parse import unquote
 
 from .globl import globl
-from .add_file_to_list import main as add_file_to_list
-from .write_list import main as write_list
+from .add_file_to_list import add_file_to_list
+from .write_list import write_list
+from .send_request import send_request
 
 
-def main(link: str, subfolder: str = ''):
+def process_link(link: str, subfolder: str = ''):
     # Definimos el directorio padre para no regresar a el
     parent = '/'.join(link.split('/')[0:-2]) + '/'
     if not globl.base_folder and not subfolder:
         # Ajustamos la carpeta padre en caso de recursion
         globl.base_folder = unquote(link.split('/')[-2])
         logging.debug("web[%s] base_folder[%s] subfolder[%s] parent[%s]",
-                  globl.WEB_SITE, globl.base_folder, subfolder, parent)
-    data = requests.get(link, timeout=10000)
+                      globl.WEB_SITE, globl.base_folder, subfolder, parent)
+    data = send_request(link)
     if data.status_code != 200:
         logging.error('[%d] Error occurred with [%s]!', data.status_code, link)
+        raise Exception('Error %d' % data.status_code)
     # Obtenemos todos todas las etiquetas <a> de la pagina
     for element in re.findall('<a href="(.*)">.*</a>', data.text):
         for ext in globl.extensions:
@@ -34,7 +35,7 @@ def main(link: str, subfolder: str = ''):
                 globl.VISITED.append(url)
                 if element.endswith('/'):  # Entramos al link hijo en caso de recursion
                     subfolder = unquote(url.split('/')[-2])
-                    main(url, subfolder)
+                    process_link(url, subfolder)
                     continue
                 # Si no vamos a descargar los archivos
                 if not globl.args.get('download'):
