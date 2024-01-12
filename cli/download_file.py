@@ -19,6 +19,7 @@ def download_file(fList: list):
             url = globl.fileList[index].get('url')
             element = globl.fileList[index].get('name')
             fSize = globl.fileList[index].get('fsize')
+            unit = globl.fileList[index].get('unit')
             subfolder = globl.fileList[index].get('subfolder')
             basefolder = globl.fileList[index].get('basefolder')
             stream, size = get_stream(url)  # Obtenemos el stream del archivo
@@ -36,7 +37,7 @@ def download_file(fList: list):
                 folder = subfolder
             # Ruta absolua al archivo
             out_file = path.join(folder, unquote(element))
-            print(f"{index+1}. {element} | [{fSize}] -> {out_file}")
+            print(f"{index+1}. {element} | [{fSize}{unit}] -> {out_file}")
             # En caso de la descarga del archivo no haya terminado
             if not path.exists(out_file) or path.getsize(out_file) < size:
                 # Escribimos el archivo

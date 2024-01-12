@@ -21,7 +21,7 @@ def add_file_to_list(url: str, base_folder: str, subfolder: str = ''):
     # PD2: Esto sera eliminado en un futuro cuando conquistemos la tierra
     for i, u in enumerate(UNITS):
         if size // 1024 ** i > 0:
-            nSize = size // 1024 ** i
+            nSize = round(size / 1024 ** i, 2)
             unit = u
             continue
         break
@@ -34,7 +34,7 @@ def add_file_to_list(url: str, base_folder: str, subfolder: str = ''):
         'name': unquote(file_url),
         'url': url,
         'size': size,
-        'fsize': f"{nSize}{unit}",
+        'fsize': nSize,
         'unit': unit,
         'subfolder': subfolder,
         'basefolder': base_folder,
