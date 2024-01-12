@@ -63,18 +63,18 @@ def main():
         globl.args['recursive'] = True
         globl.extensions.append('/')
 
-    # Ser muy verboso
-    if '-v' in sys.argv:
+    # Ser verboso
+    if '-v' in sys.argv or len(sys.argv) <= 1:
         globl.args['verbose'] = True
         logging.basicConfig(
-            format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(funcName)s:%(lineno)d )\t-\t%(message)s",
+            format="%(message)s",
             level=logging.INFO)
 
     # Ser Java!! :O
-    if '-vv' in sys.argv or len(sys.argv) <= 1:
+    if '-vv' in sys.argv:
         globl.args['verbose'] = True
         logging.basicConfig(
-            format="%(levelname)s\t-\t[ %(asctime)s ]\t-\t( %(filename)s.%(funcName)s:%(lineno)d )\t-\t%(message)s",
+            format="%(levelname)s\t-\t( %(filename)s -> %(funcName)s:%(lineno)d )\t-\t%(message)s",
             level=logging.DEBUG)
 
     # Definir una plantilla
