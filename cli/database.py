@@ -20,7 +20,8 @@ class DB:
         wheres = self.__convert_where__(where)
         sql = "SELECT {fields} FROM {table} WHERE {where}"
         sql = sql.format(table=table, fields=', '.join(
-            fields), where=', '.join(wheres))
+            fields), where=wheres)
+        logging.debug("%s", sql)
         data = self.cursor.execute(sql)
         self.db.commit()
         lista = data.fetchall()
@@ -36,7 +37,7 @@ class DB:
         values = self.__convert_set__(camps)
         wheres = self.__convert_where__(where)
         sql = "UPDATE '{}' SET {} WHERE {}"
-        sql = sql.format(table, ', '.join(values), ', '.join(wheres))
+        sql = sql.format(table, values, wheres)
         logging.debug("%s", sql)
         row_id = self.cursor.execute(sql).lastrowid
         self.db.commit()
@@ -45,13 +46,13 @@ class DB:
     def insert(self, table: str, file: dict):
         values = self.__convert_insert__(file)
         sql = "INSERT INTO '{}' ({}) VALUES ({})"
-        sql = sql.format(table, ', '.join(file), ', '.join(values))
+        sql = sql.format(table, ', '.join(file), values)
         logging.debug("%s", sql)
         row_id = self.cursor.execute(sql).lastrowid
         self.db.commit()
         return row_id
 
-    def __convert_where__(self, where: dict):
+    def __convert_where__(self, where: dict, cat='AND'):
         """Convert JSON to WHERE structure"""
         wheres = []
         for i in where:
@@ -59,18 +60,18 @@ class DB:
             if isinstance(k, str):
                 k = f"\"{k}\""
             wheres.append(f"{i}={k}")
-        return wheres
-    
+        return f" {cat} ".replace('  ', ' ').join(wheres)
+
     def __convert_set__(self, camps: dict):
-        """Convert JSON to SET structure"""        
+        """Convert JSON to SET structure"""
         values = []
         for i in camps:
             k = camps[i]
             if isinstance(k, str):
                 k = f"\"{k}\""
             values.append(f"{i}={k}")
-        return values
-            
+        return ', '.join(values)
+
     def __convert_insert__(self, camps):
         values = []
         for i in camps:
@@ -78,4 +79,4 @@ class DB:
             if isinstance(k, str):
                 k = f"\"{k}\""
             camps.append(str(k))
-        return values
+        return ', '.join(values)
