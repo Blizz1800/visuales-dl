@@ -14,6 +14,11 @@ def process_link(link: str, subfolder: str = ''):
     if not globl.base_folder and not subfolder:
         # Ajustamos la carpeta padre en caso de recursion
         globl.base_folder = unquote(link.split('/')[-2])
+        globl.db.update('downloads', {
+            'name': globl.base_folder,
+        }, {
+            'id': globl.download_id
+        })
         logging.debug("web[%s] base_folder[%s] subfolder[%s] parent[%s]",
                       globl.WEB_SITE, globl.base_folder, subfolder, parent)
     data = send_request(link)

@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+from .database import DB
 
 
 class Globals:
@@ -12,6 +13,8 @@ class Globals:
         self.base_folder = ""
         self.WEB_SITE = ""
         self.LINKS = []
+        self.download_id = None
+        self.db = DB(self.config.get('database', 'filename'))
 
 
 globl = Globals()

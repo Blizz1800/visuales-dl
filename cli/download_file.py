@@ -16,6 +16,7 @@ def download_file(fList: list):
             continue  # Si ya hemos descargado este indice nos lo saltamos
         indexes.append(index)
         try:
+            index -= 1
             url = globl.fileList[index].get('url')
             element = globl.fileList[index].get('name')
             fSize = globl.fileList[index].get('fsize')
@@ -42,9 +43,9 @@ def download_file(fList: list):
             if not path.exists(out_file) or path.getsize(out_file) < size:
                 # Escribimos el archivo
                 with open(out_file, 'wb') as dFile:
-                    pbar = tqdm(desc=element, total=size,
-                                unit_divisor=1024, leave=False,
-                                unit='B', unit_scale=True)
+                    pbar = tqdm(total=size, unit_divisor=1024,
+                                leave=False, unit='B',
+                                unit_scale=True)
                     pbar.clear()
                     for block in stream.iter_content(block_size):
                         if block:
@@ -52,7 +53,7 @@ def download_file(fList: list):
                             dFile.write(block)
                     pbar.close()
             print("Complete!\n")
-        except KeyboardInterrupt:
+        except:
             with open(path.join('.', 'index.txt'), 'w+') as f:
                 if not f.writable:
                     break

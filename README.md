@@ -14,6 +14,10 @@ Visuales-dl es un descargador de contenido especial para la web [Visuales de la 
 
 - [x] Cargar links desde los argumentos
 
+- [x] Sistema de memoria cache
+
+- [ ] Multitheading para las descargas
+
 - [ ] GUI
 
 - [ ] Continuar la descarga desde una interrupcion anterior
@@ -27,16 +31,19 @@ Visuales-dl es un descargador de contenido especial para la web [Visuales de la 
 ## Como usar
 
 ### Instalar dependencias
+
 ```sh
 pip install -r requirements.txt
 ```
 
 ### Linux / MacOS
+
 ```sh
 python3 visuales_dl.py [params]
 ```
 
 ### Windows
+
 ```sh
 py visuales_dl.py [params]
 ```

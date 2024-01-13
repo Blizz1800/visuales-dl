@@ -22,7 +22,18 @@ def cli():
         # La base de la url para obtener el nombre de dominio
         globl.WEB_SITE = '/'.join(url.split('/')[0:3])
         logging.debug("Processing: %s [%s]", url, globl.WEB_SITE)
+        data = globl.db.select('downloads', where={
+            'url': url
+        })
+        if not data:
+            globl.download_id = globl.db.insert('downloads', {
+                'name': globl.base_folder,
+                'url': url
+            })
+        else:
+            globl.download_id = data[0]
         process_link(url)
+
     # Si hay archivos en la lista, comenzamos el proceso de
     # descarga en kso de q este sea requerido
     if globl.args.get('download') and len(globl.fileList):
@@ -36,7 +47,7 @@ def cli():
                     print()
                 print(e.get('subfolder'))
                 lastGroup = e.get('subfolder')
-            print(f"{i+1}. {e.get('name')} [{e.get('fsize')}]")
+            print(f"{i+1}. {e.get('name')} [{e.get('fsize')}{e.get('unit')}]")
         print()
         print("a\tTodos\nX-Y\tFrom X to Y\nX,Y,Z\tDownload X, Y and Z\nA-F,L-T,Z\tDownload from A to F, from L to T, and Z\ne\tShow examples\nc\tCancel Download\n")
         while True:
