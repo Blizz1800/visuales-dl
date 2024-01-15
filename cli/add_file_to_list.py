@@ -30,7 +30,9 @@ def add_file_to_list(url: str, base_folder: str, subfolder: str = ''):
                 continue
             break
     else:
-        size, nSize, unit, subfolder, base_folder = tuple(file[3:])
+        size, nSize, unit, subfolder, base_folder, completed = tuple(file[3:])
+        if completed:
+            return
 
     if subfolder:
         logging.info("From [%s] load [%s] (%s)", subfolder,

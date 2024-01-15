@@ -19,15 +19,14 @@ class DB:
         fields = ', '.join(fields)
         wheres = self.__convert_where__(where)
         sql = "SELECT {fields} FROM {table} WHERE {where}"
-        sql = sql.format(table=table, fields=', '.join(
-            fields), where=wheres)
+        sql = sql.format(table=table, fields=fields, where=wheres)
         logging.debug("%s", sql)
         data = self.cursor.execute(sql)
         self.db.commit()
         lista = data.fetchall()
-        if len(lista) < 0:
+        if len(lista) == 0:
             return None
-        elif len(lista) == 1 or many == 1:
+        elif len(lista) == 1 or many == 1 and len(lista) > 1:
             return lista[0]
         elif many == -1:
             return lista
@@ -78,5 +77,5 @@ class DB:
             k = camps[i]
             if isinstance(k, str):
                 k = f"\"{k}\""
-            camps.append(str(k))
+            values.append(str(k))
         return ', '.join(values)

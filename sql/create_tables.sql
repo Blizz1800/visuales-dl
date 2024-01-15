@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS "files" (
     unit VARCHAR[3] NOT NULL,
     subfolder TEXT,
     basefolder TEXT NOT NULL,
+    complete INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY(id AUTOINCREMENT)
 );
 
@@ -14,7 +15,7 @@ CREATE TABLE IF NOT EXISTS "downloads" (
     id INTEGER NOT NULL,
     name TEXT NOT NULL,
     url TEXT UNIQUE NOT NULL,
-    complete INTEGER NOT NULL,
+    complete INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY(id AUTOINCREMENT)
 );
 

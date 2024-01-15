@@ -3,8 +3,7 @@ import re
 from urllib.parse import unquote
 
 from .globl import globl
-from .add_file_to_list import add_file_to_list
-from .write_list import write_list
+from .process_file import process_file
 from .send_request import send_request
 
 
@@ -43,14 +42,4 @@ def process_link(link: str, subfolder: str = ''):
                     process_link(url, subfolder)
                     continue
                 # Si no vamos a descargar los archivos
-                if not globl.args.get('download'):
-                    if globl.args.get('output'):
-                        logging.info(url)
-                        # Escribimos la lista como se debe
-                        write_list(url, element, ext)
-                    elif not globl.args.get('output') and not globl.args.get('verbose'):
-                        print(url)  # Sino escribimos en la salida estandar
-                    else:
-                        logging.info(url)
-                else:
-                    add_file_to_list(url, globl.base_folder, subfolder)
+                process_file(url, element, ext, subfolder)
